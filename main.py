@@ -1,16 +1,8 @@
+from datetime import datetime
+
 #* Classe para Livros
 class Livro:
-    def __init__(
-                self, 
-                titulo = "Lorem Ipsum", 
-                codigo = "0123", 
-                editora = "Lorem Ipsum", 
-                categoria = "Lorem Ipsum",
-                ano = "2000", 
-                valor = 10.00, 
-                estoque = 0
-            ):
-
+    def __init__(self, titulo, codigo, editora, categoria, ano, valor, estoque):
         self.titulo = titulo
         self.codigo = codigo
         self.editora = editora
@@ -42,15 +34,15 @@ def Cadastro(lista_livros):
 
     while recebendo_valores: # Código
         try:
-            codigo = input("Digite o código do livro: ")
+            codigo = int(input("Digite o código do livro: "))
             
-            if (len(codigo) > 0):
+            if codigo:
                 recebendo_valores = False
             else:
                 raise ValueError
 
         except ValueError:
-            print("\nCódigo inválido, utilize caracteres alfabéticos ou números.")
+            print("\nCódigo inválido, utilize apenas números inteiros.")
             Continuar()
             continue
         except Exception as error:
@@ -130,6 +122,7 @@ def Cadastro(lista_livros):
     
     while recebendo_valores: # Ano
         try:
+            # Coletando o input como string
             ano = input("Digite o ano de publicação do livro: ")
             
             if (len(ano) <= 0):
@@ -137,20 +130,31 @@ def Cadastro(lista_livros):
 
             elif (len(ano) <= 4):
                 try:
+                    # Convertendo ano para int
                     ano = int(ano)
+
+                    ano_atual = datetime.now().year
+
+                    if ano <= 0:
+                        print("\nNão será aceito números menores que zero.")
+                        raise ValueError
+
+                    elif ano > ano_atual:
+                        print("\nAno inexistente")
+                        raise ValueError
                     
                     recebendo_valores = False
                 except ValueError:
-                    print("\nEntrada inválida, insira no máximo quatro(4) números inteiros.")
+                    print("\nEntrada inválida, insira um ano válido.")
                     Continuar()
                     continue
             else:
-                print("\nEntrada inválida, insira no máximo quatro(4) números inteiros.")
+                print("\nEntrada inválida, insira um ano válido.")
                 Continuar()
                 continue
             
         except ValueError:
-            print("\nEntrada inválida, insira no máximo quatro(4) números inteiros.")
+            print("\nEntrada inválida, insira um ano válido.")
             Continuar()
             continue
         except Exception as error:
@@ -542,7 +546,7 @@ def Valor_Total_Estoque(lista_livros):
 def Carregar_Estoque():
     contador_linhas = 0
 
-    print("Carregando livros do arquivo...\n")
+    print("Carregando livros do arquivo de estoque...\n")
 
     try:
         # Abrindo o arquivo
@@ -805,6 +809,10 @@ if __name__ == "__main__":
 
         elif escolha == 8: # Carregar arquivo de livros
             print("-"*30)
+            
+            # Apagando os valores da lista local
+            lista_livros = []
+
             Carregar_Estoque()
         
         elif escolha == 9:
