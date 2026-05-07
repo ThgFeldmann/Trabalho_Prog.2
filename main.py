@@ -1,3 +1,23 @@
+# Cada Filial terá seu prório estoque
+#TODO Criar uma funcionalidade para criar uma filial
+# (código, nome da filial, enderço da filial, contato da filial, livros em estoque)
+#TODO Ao criar um livro o mesmo deve ser alocado em uma filial
+# o estoque pode ter livros idênticos em diferentes filiais
+#TODO Os arquivos de texto devem guardar as informações da seguinte forma:
+##FL01,BarraSul,DiáriodeNoticias80,3221-6369
+#3426,compiladores,2012,computação,pearson,R$135.50,50
+#2631,sistemasdigitais,2017,computação,liber,R$99.90,30
+#9680,senhordosaneis:asociedadedoanel,2005,fantasia,harper,R$35.00,120
+
+##FL02,Centro,Andradas1312,3020-2253
+#9680,senhordosaneis:asociedadedoanel,2005,fantasia,harper,R$35.00,20
+#9681,senhordosaneis:asduastorres,2005,fantasia,harper,R$35.00,20
+
+#TODO formato de uma filial no arquivo: #FL<númerodafilialcomdoisdígitos>,<nomedafilial>,<endereço>,<telefone>
+#TODO É necessário poder acessar de forma separado o estoque de cada filial
+#TODO As buscas passam a perguntar o código da filial para a pesquisa
+#TODO Funcionalidade de busca por código, mostrando todos os livros que condizem com o código em todas as filiais
+
 from datetime import datetime
 
 #* Classe para Livros
@@ -24,10 +44,25 @@ class Livro:
         print(f"Estoque: {self.estoque:.2f} unidade(s)")
         print(f"Valor total em estoque: R$ {valor_estoque:.2f}")
 
+class Filial:
+    def __init__(self, codigo, nome, endereco, telefone, livros):
+        self.codigo = codigo
+        self.nome = nome
+        self.endereco = endereco
+        self.telefone = telefone
+        self.livros = livros
+        
+    def Info(self):
+        print(f"\n#FL{self.codigo}")
+        print(f"Nome: {self.nome}")
+        print(f"Endereço: {self.endereco}")
+        print(f"Telefone: {self.telefone}")
+        print(f"Livros: {self.livros}")
+
 #* Funções
 
 # Função de cadastro de livros
-def Cadastro(lista_livros):
+def Cadastro_De_Livros(lista_livros):
     recebendo_valores = True
 
     print("Cadastro de Livros\n")
@@ -215,10 +250,10 @@ def Cadastro(lista_livros):
     valor_estoque = valor * estoque
     
     # Etapa de confirmação de dados, para o cadastro do livro
-    Confirmação_De_Cadastro(codigo, titulo, editora, categoria, ano, valor, estoque, valor_estoque)
+    Confirmação_De_Cadastro_Do_Livro(codigo, titulo, editora, categoria, ano, valor, estoque, valor_estoque)
 
 # Função para o usuário confirmar o cadastro do livro
-def Confirmação_De_Cadastro(codigo, titulo, 
+def Confirmação_De_Cadastro_Do_Livro(codigo, titulo, 
                             editora, categoria, ano, 
                             valor, estoque, valor_estoque):
     running = True
@@ -296,6 +331,48 @@ def Confirmação_De_Cadastro(codigo, titulo,
             print("Opção inválida, tente novamente.")
             Continuar()
             continue
+
+#TODO Em desenvolvimento
+# Função de cadastro de filiais
+def Cadastro_De_Filiais(lista_filiais, lista_livros):
+    running = True
+
+    # Flag para repetição de inputs individuais
+    recebendo_valores = True
+
+    while running:
+    
+        while recebendo_valores: # Código
+            codigo = input("Digite o código da filial: ")
+            recebendo_valores = False
+
+        recebendo_valores = True
+
+        while recebendo_valores: # Nome
+            nome = input("Digite o nome da filial: ")
+            recebendo_valores = False
+
+        recebendo_valores = True
+
+        while recebendo_valores: # Endereço
+            endereco = input("Digite o endereço da filial: ")
+            recebendo_valores = False
+        
+        recebendo_valores = True
+
+        while recebendo_valores: # Telefone
+            telefone = input("Digite o telefone da filial: ")
+            recebendo_valores = False
+        
+        lista_filiais.append(Filial(
+            codigo,
+            nome,
+            endereco,
+            telefone,
+            lista_livros
+        ))
+
+        running = False
 
 # Função de busca de livros pelo titulo
 def Info_Por_Nome(lista_livros):
@@ -730,6 +807,9 @@ def Continuar():
 if __name__ == "__main__":
     # lista de livros
     lista_livros = []
+    
+    # lista de filiais
+    lista_filiais = []
 
     # escolha inserida pelo usuário, 
     # número inicial é irrelevante, serve apenas para o começo do loop.
@@ -751,7 +831,8 @@ if __name__ == "__main__":
         print("7 - Valor total no estoque")
         print("8 - Carregar estoque")
         print("9 - Atualizar arquivo no estoque")
-        print("0 - Encerrar atividades\n")
+        print("0 - Encerrar atividades")
+        print("11 - Cadastrar filial\n")
         
         try:
             escolha = int(input(
@@ -773,7 +854,7 @@ if __name__ == "__main__":
 
         elif escolha == 1: # Cadastro de livros
             print("-"*30)
-            Cadastro(lista_livros)
+            Cadastro_De_Livros(lista_livros)
 
         elif escolha == 2: # Listagem geral dos livros
             print("-"*30)
