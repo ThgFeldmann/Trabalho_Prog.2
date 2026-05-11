@@ -2,6 +2,7 @@
 3426,compiladores,2012,computação,pearson,R$135.50,50
 2631,sistemasdigitais,2017,computação,liber,R$99.90,30
 9680,senhordosaneis:asociedadedoanel,2005,fantasia,harper,R$35.00,120
+
 #FL02,Centro,Andradas1312,3020-2253
 9680,senhordosaneis:asociedadedoanel,2005,fantasia,harper,R$35.00,20
 9681,senhordosaneis:asduastorres,2005,fantasia,harper,R$35.00,20
