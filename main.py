@@ -52,10 +52,10 @@ class Filial(Livro):
         self.nome = nome
         self.endereco = endereco
         self.telefone = telefone
-        self.livros = [Livro]
+        self.livros = []
         
     def Info(self):
-        print(f"\n#FL{self.codigo}")
+        print(f"\n{self.codigo}")
         print(f"Nome: {self.nome}")
         print(f"Endereço: {self.endereco}")
         print(f"Telefone: {self.telefone}")
@@ -99,20 +99,49 @@ def Escolher_Cadastro(lista_filiais, lista_livros):
             running = False
             Cadastro_De_Filiais(lista_filiais, lista_livros)
 
-# Função para adicionar o livro no estoque de uma Filial especifica
-def Adicionar_Livro_Na_Filial():
-    
+# Função para verificar se a Filial existe | recebe um código e retorna um booleano
+def Filtrar_Filial(codigo_filial):
+    arquivo = open("estoque_test_filiais.txt", "r", encoding="utf-8")
     
     for linha in arquivo:
-        
+        if linha[0] == "#": # Se a linha representa uma filial
+            filial = linha.strip().replace("\n", "").split(",")
+            
+            if (filial[0].replace("#FL", "") == codigo_filial): # Se a filial é a procurada pelo usuário
+                return True
+            else:
+                return False
 
 # Função de cadastro de livros
-#TODO adicionar input para o código da filial
 #TODO adicionar o livro na lista da filial correspondente
 def Cadastro_De_Livros(lista_livros):
     recebendo_valores = True
 
     print("Cadastro de Livros\n")
+    
+    while recebendo_valores: # Código
+        try:
+            codigo_filial = input("Digite o código da Filial: ")
+            
+            if codigo_filial:
+                recebendo_valores = False
+            else:
+                raise ValueError
+
+        except ValueError:
+            print("\nCódigo inválido, digite apenas os números inteiros do código.")
+            Continuar()
+            continue
+        except Exception as error:
+            print("\nOcorreu um erro inesperado, tente novamente.")
+            print(f"Mensagem de erro: {error}")
+            Continuar()
+            continue
+    
+    if 
+
+    # 'Reiniciando' para o próximo loop
+    recebendo_valores = True
 
     while recebendo_valores: # Código
         try:
@@ -292,118 +321,102 @@ def Cadastro_De_Livros(lista_livros):
             print(f"Mensagem de erro: {error}")
             Continuar()
             continue
-    
-    # 'Reiniciando' para o próximo loop
-    recebendo_valores = True
-    
-    while recebendo_valores: # Código
-        try:
-            codigo_filial = int(input("Digite o código da Filial: "))
-            
-            if codigo_filial:
-                recebendo_valores = False
-            else:
-                raise ValueError
-
-        except ValueError:
-            print("\nCódigo inválido, utilize apenas números inteiros.")
-            Continuar()
-            continue
-        except Exception as error:
-            print("\nOcorreu um erro inesperado, tente novamente.")
-            print(f"Mensagem de erro: {error}")
-            Continuar()
-            continue
-
-    # 'Reiniciando' para o próximo loop
-    recebendo_valores = True
 
     # Calculo para o valor total em estoque
     valor_estoque = valor * estoque
     
     # Etapa de confirmação de dados, para o cadastro do livro
-    Confirmação_De_Cadastro_Do_Livro(codigo_livro, titulo, editora, categoria, ano, valor, estoque, valor_estoque)
+    Confirmação_De_Cadastro_Do_Livro(codigo_livro, titulo, editora, categoria, ano, valor, estoque, valor_estoque, codigo_filial)
 
 # Função para o usuário confirmar o cadastro do livro
-def Confirmação_De_Cadastro_Do_Livro(codigo, titulo, 
-                            editora, categoria, ano, 
-                            valor, estoque, valor_estoque, codigo_filial):
-    running = True
+def Confirmação_De_Cadastro_Do_Livro(
+        codigo, titulo, 
+        editora, categoria, ano, 
+        valor, estoque, valor_estoque, codigo_filial
+    ):
+    filial_existe = Filtrar_Filial(codigo_filial)
     
-    while running:
-        print("-"*30)
-        print("Confirmando os dados...")
-        print(f"\n#FL{codigo_filial}")
-        print(f"\n>>>>>>Cod#{codigo}")
-        print(f"Titulo/Editora: {titulo}/{editora}")
-        print(f"Categoria: {categoria}")
-        print(f"Ano: {ano}")
-        print(f"Valor: R$ {valor}")
-        print(f"Estoque: {estoque:.2f} unidade(s)")
-        print(f"Valor total em estoque: R$ {valor_estoque:.2f}\n")
+    if filial_existe == True:
+        running = True
         
-        print("-"*30)
-        
-        print("Cadastrar?\n")
-        print("S - Confirmar")
-        print("N - Cancelar\n")
-        
-        try:
-            confirmação = input("Escolha: ").upper()
-        except ValueError:
-            print("\nOcorreu um erro na entrada. Utilize uma das opções válidas e tente novamente.")
-            Continuar()
-            continue
-        except Exception as error:
-            print("Ocorreu um erro inesperado, tente novamente.")
-            print(f"Mensagem do erro: {error}")
-            Continuar()
-            continue
-        
-        if confirmação == "S":
+        while running:
             print("-"*30)
-            print("\nCadastrando o livro...")
-            print(".")
-            print(".")
-            print(".")
-
+            print("Confirmando os dados...\n")
+            
+            print(f"Filial: #FL{codigo_filial}")
+            print(f"\n>>>>>>Cod#{codigo}")
+            print(f"Titulo/Editora: {titulo}/{editora}")
+            print(f"Categoria: {categoria}")
+            print(f"Ano: {ano}")
+            print(f"Valor: R$ {valor}")
+            print(f"Estoque: {estoque:.2f} unidade(s)")
+            print(f"Valor total em estoque: R$ {valor_estoque:.2f}\n")
+            
+            print("-"*30)
+            
+            print("Cadastrar?\n")
+            print("S - Confirmar")
+            print("N - Cancelar\n")
+            
             try:
-                lista_livros.append(Livro(
-                    codigo=codigo,
-                    titulo=titulo,
-                    editora=editora,
-                    categoria=categoria,
-                    ano=ano,
-                    valor=valor,
-                    estoque=estoque
-                ))
-                print("Livro cadastrado com sucesso.")
-                
+                confirmação = input("Escolha: ").upper()
+            except ValueError:
+                print("\nOcorreu um erro na entrada. Utilize uma das opções válidas e tente novamente.")
+                Continuar()
+                continue
+            except Exception as error:
+                print("Ocorreu um erro inesperado, tente novamente.")
+                print(f"Mensagem do erro: {error}")
+                Continuar()
+                continue
+            
+            if confirmação == "S":
+                print("-"*30)
+                print("\nCadastrando o livro...")
+                print(".")
+                print(".")
+                print(".")
+
+                try:
+                    lista_livros.append(Livro(
+                        codigo=codigo,
+                        titulo=titulo,
+                        editora=editora,
+                        categoria=categoria,
+                        ano=ano,
+                        valor=valor,
+                        estoque=estoque
+                    ))
+                    print("Livro cadastrado com sucesso.")
+                    
+                    #* Condição para o término da repetição
+                    running = False
+                    Continuar()
+                except Exception as error:
+                    print("Ocorreu um erro no cadastro, tente novamente.")
+                    print("Erro: ", error)
+                    Continuar()
+                    continue
+
+            elif confirmação == "N":
+                print("-"*30)
+                print("Cancelando o cadastro...")
+                print(".")
+                print(".")
+                print(".")
+                print("Cadastro cancelado.")
                 #* Condição para o término da repetição
                 running = False
                 Continuar()
-            except Exception as error:
-                print("Ocorreu um erro no cadastro, tente novamente.")
-                print("Erro: ", error)
+            
+            else:
+                print("-"*30)
+                print("Opção inválida, tente novamente.")
                 Continuar()
                 continue
-
-        elif confirmação == "N":
-            print("-"*30)
-            print("Cancelando o cadastro...")
-            print(".")
-            print(".")
-            print(".")
-            print("Cadastro cancelado.")
-            #* Condição para o término da repetição
-            running = False
-            Continuar()
-        
-        else:
-            print("-"*30)
-            print("Opção inválida, tente novamente.")
-            Continuar()
-            continue
+    else:
+        print("\nFilial não existe no registro.")
+        Continuar()
 
 # Função de cadastro de filiais
 def Cadastro_De_Filiais(lista_filiais, lista_livros):
@@ -909,7 +922,11 @@ if __name__ == "__main__":
         print("7 - Valor total no estoque")
         print("8 - Carregar estoque")
         print("9 - Atualizar arquivo no estoque")
+
+        #******** FUNÇÕES DE TESTES
         print("10 - Lista Filiais (teste)")
+        print("11 - Teste busca de filiais")
+
         print("0 - Encerrar atividades\n")
         
         try:
@@ -926,9 +943,14 @@ if __name__ == "__main__":
             Continuar()
             continue
         
+        #******** FUNÇÕES DE TESTES
         if escolha == 10: # Teste
             print("-"*30)
             test(lista_filiais)
+            Continuar()
+        elif escolha == 11:
+            print("-"*30)
+            Filtrar_Filial()
             Continuar()
 
         if escolha == 0: # Encerrar o sistema
