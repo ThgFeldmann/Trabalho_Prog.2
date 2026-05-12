@@ -16,7 +16,8 @@
 #TODO formato de uma filial no arquivo: #FL<númerodafilialcomdoisdígitos>,<nomedafilial>,<endereço>,<telefone>
 #TODO É necessário poder acessar de forma separado o estoque de cada filial
 #TODO As buscas passam a perguntar o código da filial para a pesquisa
-#TODO Funcionalidade de busca por código, mostrando todos os livros que condizem com o código em todas as filiais
+#TODO Funcionalidade de busca por código, mostrando todos os livros do estoque, incluindo os valores diferentes entre as filiais
+# ({valor} >>> {nome da Filial}, {estoque deste livro na Filial})
 
 from datetime import datetime
 
@@ -45,7 +46,7 @@ class Livro:
         print(f"Valor total em estoque: R$ {valor_estoque:.2f}")
 
 #* Classe para Filiais
-#TODO Protótipo
+# Protótipo
 class Filial(Livro):
     def __init__(self, codigo, nome, endereco, telefone):
         self.codigo = codigo
@@ -99,6 +100,31 @@ def Escolher_Cadastro(lista_filiais, lista_livros):
             running = False
             Cadastro_De_Filiais(lista_filiais, lista_livros)
 
+# Função para verificar se a Filial existe no arquivo de estoque
+def Verificar_Filial(codigo_filial_inserido):
+    codigo_foi_aceito = False
+    
+    # Abrindo o arquivo para a leitura
+    with open("estoque_test_filiais.txt", "r", encoding="utf-8") as arquivo:
+        
+        # Leitura do arquivo linha-por-linha
+        for linha in arquivo:
+            
+            # Caso a linha atual seja uma Filial
+            if linha[0] == "#":
+                # Normalize a linha
+                filial = linha.strip().replace("\n", "").split(",")
+                # Separe o código da Filial
+                codigo_filial = filial[0].replace("#FL", "")
+                
+                # Verifique se o código inserido pelo usuário, está presente no arquivo
+                if codigo_filial == codigo_filial_inserido:
+                    codigo_foi_aceito = True
+                    return codigo_foi_aceito
+    
+    if codigo_foi_aceito == False:
+        return codigo_foi_aceito
+
 # Função para enviar o Livro para o estoque e adiciona-lo na Filial correta
 #TODO Falta tratamentos de erros
 def Enviar_Livro_Para_a_Filial_No_Estoque(codigo_filial_inserido, livro):
@@ -129,7 +155,6 @@ def Enviar_Livro_Para_a_Filial_No_Estoque(codigo_filial_inserido, livro):
                 arquivo_novo.write(linha)
 
 # Função de cadastro de livros
-#TODO adicionar o livro na lista da filial correspondente
 def Cadastro_De_Livros(lista_livros):
     recebendo_valores = True
 
@@ -137,10 +162,19 @@ def Cadastro_De_Livros(lista_livros):
     
     while recebendo_valores: # Código
         try:
-            codigo_filial = input("Digite o código da Filial: ")
+            print("Digite o código de um Filial.")
+            print("O livro será cadastrado na Filial correspondente.")
+            codigo_filial = input(": ")
             
             if codigo_filial:
-                recebendo_valores = False
+                codigo_existe = Verificar_Filial(codigo_filial)
+                
+                if codigo_existe:
+                    recebendo_valores = False
+                else: # Caso o código não exista no sistema
+                    print("\nCódigo inválido. Este código não foi encontrado no sistema.")
+                    Continuar()
+                    continue
             else:
                 raise ValueError
 
@@ -431,8 +465,28 @@ def Cadastro_De_Filiais(lista_filiais, lista_livros):
     while running:
     
         while recebendo_valores: # Código
-            codigo = input("Digite o código da filial: ")
-            recebendo_valores = False
+            print("Digite o código da Filial")
+            print("Digite apenas o número do código")
+            
+            codigo = input(": ")
+            codigo_atual = codigo
+            
+            try:
+                codigo = str(int(codigo))
+                
+                if codigo_atual[0] == 0 and codigo != 0:
+                    codigo = "0" + str(codigo)
+                
+                recebendo_valores = False
+            except ValueError:
+                print("\nCódigo inválido. Digite apenas números inteiros.")
+                Continuar()
+                continue
+            except Exception as error:
+                print("\nOcorreu um erro inesperado, tente novamente.")
+                print(f"Erro: {error}")
+                Continuar()
+                continue
 
         recebendo_valores = True
 
