@@ -1,8 +1,4 @@
 # Cada Filial terá seu prório estoque
-#TODO Criar uma funcionalidade para criar uma filial
-# (código, nome da filial, enderço da filial, contato da filial, livros em estoque)
-#TODO Ao criar um livro o mesmo deve ser alocado em uma filial
-# o estoque pode ter livros idênticos em diferentes filiais
 #TODO Os arquivos de texto devem guardar as informações da seguinte forma:
 ##FL01,BarraSul,DiáriodeNoticias80,3221-6369
 #3426,compiladores,2012,computação,pearson,R$135.50,50
@@ -13,7 +9,7 @@
 #9680,senhordosaneis:asociedadedoanel,2005,fantasia,harper,R$35.00,20
 #9681,senhordosaneis:asduastorres,2005,fantasia,harper,R$35.00,20
 
-#TODO formato de uma filial no arquivo: #FL<númerodafilialcomdoisdígitos>,<nomedafilial>,<endereço>,<telefone>
+# formato de uma filial no arquivo: #FL<númerodafilialcomdoisdígitos>,<nomedafilial>,<endereço>,<telefone>
 #TODO É necessário poder acessar de forma separado o estoque de cada filial
 #TODO As buscas passam a perguntar o código da filial para a pesquisa
 #TODO Funcionalidade de busca por código, mostrando todos os livros do estoque, incluindo os valores diferentes entre as filiais
@@ -34,6 +30,9 @@ class Livro:
     
     def Info(self): # Método para informar *todos* os livros
 
+        self.valor = float(self.valor)
+        self.estoque = int(self.estoque)
+
         # Calculo para o valor total em estoque
         valor_estoque = self.valor * self.estoque
 
@@ -53,14 +52,12 @@ class Filial(Livro):
         self.nome = nome
         self.endereco = endereco
         self.telefone = telefone
-        self.livros = []
         
     def Info(self):
         print(f"\n{self.codigo}")
         print(f"Nome: {self.nome}")
         print(f"Endereço: {self.endereco}")
         print(f"Telefone: {self.telefone}")
-        print(f"Livros: {self.livros}")
 
 #* Funções
 
@@ -105,7 +102,7 @@ def Verificar_Filial(codigo_filial_inserido):
     codigo_foi_aceito = False
     
     # Abrindo o arquivo para a leitura
-    with open("estoque_test_filiais.txt", "r", encoding="utf-8") as arquivo:
+    with open("estoque_filiais.txt", "r", encoding="utf-8") as arquivo:
         
         # Leitura do arquivo linha-por-linha
         for linha in arquivo:
@@ -126,15 +123,14 @@ def Verificar_Filial(codigo_filial_inserido):
         return codigo_foi_aceito
 
 # Função para enviar o Livro para o estoque e adiciona-lo na Filial correta
-#TODO Falta tratamentos de erros
 def Enviar_Livro_Para_a_Filial_No_Estoque(codigo_filial_inserido, livro):
     
     # 'Salvando' o texto atual do arquivo em uma variável
-    with open("estoque_test_filiais.txt", "r", encoding="utf-8") as arquivo_atual:
+    with open("estoque_filiais.txt", "r", encoding="utf-8") as arquivo_atual:
         texto_arquivo_atual = arquivo_atual.readlines()
     
     # Abrindo o arquivo para escrita
-    with open("estoque_test_filiais.txt", "w", encoding="utf-8") as arquivo_novo:
+    with open("estoque_filiais.txt", "w", encoding="utf-8") as arquivo_novo:
         
         # 'Lendo' o texto do arquivo atual, pela variável
         for linha in texto_arquivo_atual:
@@ -477,6 +473,8 @@ def Cadastro_De_Filiais(lista_filiais, lista_livros):
                 if codigo_atual[0] == 0 and codigo != 0:
                     codigo = "0" + str(codigo)
                 
+                codigo = "#FL" + codigo
+
                 recebendo_valores = False
             except ValueError:
                 print("\nCódigo inválido. Digite apenas números inteiros.")
@@ -905,6 +903,81 @@ def Repetir_Função():
             Continuar()
             continue
 
+# Função para listar os Livros que estão cadastrados em uma Filial específica
+def Listar_Estoque_da_Filial():
+    recebendo_valores = True
+    
+    print("Listagem do estoque de uma Filial")
+
+    # Validando o código da Filial
+    while recebendo_valores: # Código da Filial
+            print("\nDigite o código da Filial")
+            print("Digite apenas o número do código")
+            
+            codigo = input(": ")
+            
+            # Verificando se a Filial existe no arquivo
+            codigo_validado = Verificar_Filial(codigo)
+            
+            if codigo_validado:
+                codigo_atual = codigo
+                
+                try:
+                    codigo = str(int(codigo))
+                    codigo = "0" + str(codigo)
+                    
+                    if codigo_atual[0] == "0" and codigo[0] != "0":
+                        codigo = "0" + str(codigo)
+                        print(codigo)
+
+                    recebendo_valores = False
+                except ValueError:
+                    print("\nCódigo inválido. Digite apenas números inteiros.")
+                    Continuar()
+                    continue
+                except Exception as error:
+                    print("\nOcorreu um erro inesperado, tente novamente.")
+                    print(f"Erro: {error}")
+                    Continuar()
+                    continue
+            else:
+                print("\nNão foi encontrado nenhuma Filial com este código.")
+                Continuar()
+                continue
+
+    # Abrindo novamente o arquivo
+    with open("estoque_filiais.txt", "r", encoding="utf-8") as arquivo:
+        livros_na_filial = 0
+        
+        # Buscando a Filial correta
+        for linha in arquivo:
+            if linha[0] == "#":
+                filial = linha.strip().replace("\n", "").split(",")
+                codigo_filial = filial[0].replace("#FL", "")
+                
+                # Verificando se o código é o mesmo que o inserido pelo usuário
+                if codigo_filial == codigo:
+                    break
+        
+        # Buscando os livros da Filial
+        for linha in arquivo:
+            if linha[0] != "#":
+                livros_na_filial += 1
+                linha = linha.strip().replace("R$", "").split(",")
+                livro = Livro(linha[1], linha[0], linha[4], linha[3], linha[2], linha[5], linha[6])
+                livro.Info()
+            else:
+                break
+        
+        if livros_na_filial == 1:
+            print(f"\nFoi encontrado {livros_na_filial} livro na Filial.")
+        elif livros_na_filial > 1:
+            print(f"\nForam encontrados {livros_na_filial} livros na Filial.")
+        else:
+            print("\nNão foram encontrados livros nesta Filial.")
+        
+        Continuar()
+
 # Função que será executada antes de encerrar o sistema
 def Finalizar_Sessão(lista_livros):
     running = True
@@ -946,13 +1019,7 @@ def Continuar():
     input("Continuar...")
 
 def test():
-    livro = Livro(
-        "teste", 1234, "teste", "teste", 2004, 50.00, 600
-    )
-    
-    codigo_filial = "03"
-    
-    Enviar_Livro_Para_a_Filial_No_Estoque(codigo_filial, livro)
+    Listar_Estoque_da_Filial()
 
 #* Função Principal
 if __name__ == "__main__":
@@ -982,9 +1049,10 @@ if __name__ == "__main__":
         print("7 - Valor total no estoque")
         print("8 - Carregar estoque")
         print("9 - Atualizar arquivo no estoque")
+        print("10 - Listagem de estoque")
 
-        #******** FUNÇÕES DE TESTES
-        print("10 - Teste Salvar livro na Filial (teste)")
+        #******** FUNÇÃO DE TESTE
+        print("11 - Teste")
 
         print("0 - Encerrar atividades\n")
         
@@ -1003,7 +1071,7 @@ if __name__ == "__main__":
             continue
         
         #******** FUNÇÕES DE TESTES
-        if escolha == 10: # Teste
+        if escolha == 11: # Teste
             print("-"*30)
             test()
             Continuar()
@@ -1059,6 +1127,10 @@ if __name__ == "__main__":
         elif escolha == 9: # Atualizar o arquivo de estoque
             print("-"*30)
             Atualizar_Estoque(lista_livros)
+
+        elif escolha == 10: # Listagem do estoque de uma Filial específica
+            print("-"*30)
+            Listar_Estoque_da_Filial()
 
         else: # Opção inválida
             print("-"*30)
