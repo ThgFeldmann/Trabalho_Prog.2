@@ -72,10 +72,11 @@ class Filial(Livro):
         self.livros.append(livro)
     
     def Listar_Livros_Da_Filial(self):
-        valor_total = 0
-        
         for livro in self.livros:
             livro.Info()
+    
+    def Calcular_Valor_Total_de_Livros(self):
+        valor_total = 0
         
         for livro in self.livros:
             valor_total += livro.valor * livro.estoque
@@ -396,7 +397,6 @@ def Cadastro_De_Livros(lista_filiais):
     Confirmação_De_Cadastro_Do_Livro(livro, codigo_filial, lista_filiais)
 
 # Função para o usuário confirmar o cadastro do livro
-#* Cadastro para a 'lista local'
 def Confirmação_De_Cadastro_Do_Livro(livro, codigo_filial, lista_filiais):
     running = True
     
@@ -474,7 +474,7 @@ def Confirmação_De_Cadastro_Do_Livro(livro, codigo_filial, lista_filiais):
             Continuar()
             continue
 
-# Função de cadastro de filiais
+# Função de cadastro de Filiais
 # A Filial é cadastrada sem Livros
 def Cadastro_De_Filiais(lista_filiais):
     running = True
@@ -1007,6 +1007,9 @@ def Listar_Estoque_da_Filial(lista_filiais):
         for filial in lista_filiais:
             if filial.codigo == codigo_inserido:
                 filial.Info_Livros()
+                break
+        
+        filial.Calcular_Valor_Total_de_Livros()
     else:
         print("\nNão existe nenhuma Filial na lista local")
 
