@@ -14,6 +14,8 @@
 #TODO As buscas passam a perguntar o código da filial para a pesquisa
 #TODO Funcionalidade de busca por código, mostrando todos os livros do estoque, incluindo os valores diferentes entre as filiais
 # ({valor} >>> {nome da Filial}, {estoque deste livro na Filial})
+#TODO Funções devem usar valores que estão na lista local, não no arquivo
+#TODO Alterar as Funções que envolvem o arquivo de estoque, para usarem o arquivo de Filiais
 
 from datetime import datetime
 
@@ -52,12 +54,33 @@ class Filial(Livro):
         self.nome = nome
         self.endereco = endereco
         self.telefone = telefone
+        self.livros = []
         
     def Info(self):
         print(f"\n{self.codigo}")
         print(f"Nome: {self.nome}")
         print(f"Endereço: {self.endereco}")
         print(f"Telefone: {self.telefone}")
+        print(f"Quantidade de Livros: {len(self.livros)}")
+    
+    def Info_Livros(self):
+        print(f"\nLivros na Filial: {self.codigo}")
+        for livro in self.livros:
+            livro.Info()
+    
+    def Adicionar_Livro(self, livro):
+        self.livros.append(livro)
+    
+    def Listar_Livros_Da_Filial(self):
+        valor_total = 0
+        
+        for livro in self.livros:
+            livro.Info()
+        
+        for livro in self.livros:
+            valor_total += livro.valor * livro.estoque
+        
+        print(f"\nValor total no estoque da Filial: R$ {valor_total:.2f}")
 
 #* Funções
 
@@ -91,7 +114,7 @@ def Escolher_Cadastro(lista_filiais, lista_livros):
         elif (escolha == 1):
             print("-"*30)
             running = False
-            Cadastro_De_Livros(lista_livros)
+            Cadastro_De_Livros(lista_filiais)
         elif (escolha == 2):
             print("-"*30)
             running = False
@@ -131,8 +154,7 @@ def Enviar_Livro_Para_a_Filial_No_Estoque(codigo_filial_inserido, livro):
     
     # Abrindo o arquivo para escrita
     with open("estoque_filiais.txt", "w", encoding="utf-8") as arquivo_novo:
-        
-        # 'Lendo' o texto do arquivo atual, pela variável
+        # 'Lendo' o texto do arquivo atual, pela variável já salva
         for linha in texto_arquivo_atual:
             
             if linha != "":
@@ -144,14 +166,12 @@ def Enviar_Livro_Para_a_Filial_No_Estoque(codigo_filial_inserido, livro):
                     
                     # Verificando se o código é o mesmo que o inserido pelo usuário
                     if (codigo_filial_para_verificar == codigo_filial_inserido):
-                        print(linha)
                         linha = linha + f"{livro.codigo},{livro.titulo},{livro.ano},{livro.categoria},{livro.editora},R${livro.valor},{livro.estoque}\n"
-                        print(linha)
                     
                 arquivo_novo.write(linha)
 
 # Função de cadastro de livros
-def Cadastro_De_Livros(lista_livros):
+def Cadastro_De_Livros(lista_filiais):
     recebendo_valores = True
 
     print("Cadastro de Livros\n")
@@ -166,6 +186,7 @@ def Cadastro_De_Livros(lista_livros):
                 codigo_existe = Verificar_Filial(codigo_filial)
                 
                 if codigo_existe:
+                    codigo_filial = "#FL" + codigo_filial
                     recebendo_valores = False
                 else: # Caso o código não exista no sistema
                     print("\nCódigo inválido. Este código não foi encontrado no sistema.")
@@ -369,28 +390,30 @@ def Cadastro_De_Livros(lista_livros):
     # Calculo para o valor total em estoque
     valor_estoque = valor * estoque
     
-    livro = Livro(codigo_livro, titulo, editora, categoria, ano, valor, estoque, valor_estoque)
+    livro = Livro(codigo_livro, titulo, editora, categoria, ano, valor, estoque)
     
     # Etapa de confirmação de dados, para o cadastro do livro
-    Confirmação_De_Cadastro_Do_Livro(livro, codigo_filial)
+    Confirmação_De_Cadastro_Do_Livro(livro, codigo_filial, lista_filiais)
 
 # Função para o usuário confirmar o cadastro do livro
 #* Cadastro para a 'lista local'
-def Confirmação_De_Cadastro_Do_Livro(livro, codigo_filial):
+def Confirmação_De_Cadastro_Do_Livro(livro, codigo_filial, lista_filiais):
     running = True
     
     while running:
         print("-"*30)
         print("Confirmando os dados...\n")
         
-        print(f"Filial: #FL{livro.filial}")
+        valor_estoque = livro.valor * livro.estoque
+        
+        print(f"Filial: #FL{codigo_filial}")
         print(f"\n>>>>>>Cod#{livro.codigo}")
         print(f"Titulo/Editora: {livro.titulo}/{livro.editora}")
         print(f"Categoria: {livro.categoria}")
         print(f"Ano: {livro.ano}")
         print(f"Valor: R$ {livro.valor}")
         print(f"Estoque: {livro.estoque:.2f} unidade(s)")
-        print(f"Valor total em estoque: R$ {livro.valor_estoque:.2f}\n")
+        print(f"Valor total em estoque: R$ {valor_estoque:.2f}\n")
         
         print("-"*30)
         
@@ -418,9 +441,11 @@ def Confirmação_De_Cadastro_Do_Livro(livro, codigo_filial):
             print(".")
 
             try:
-                lista_livros.append(livro)
-                # Executar Função de salvar o Livro no estoque
-                Enviar_Livro_Para_a_Filial_No_Estoque(codigo_filial, livro)
+                #Adicionando o Livro na Filial correta
+                for filial in lista_filiais:
+                    if filial.codigo == codigo_filial:
+                        filial.Adicionar_Livro(livro)
+                
                 print("Livro cadastrado com sucesso.")
                 
                 #* Condição para o término da repetição
@@ -450,7 +475,8 @@ def Confirmação_De_Cadastro_Do_Livro(livro, codigo_filial):
             continue
 
 # Função de cadastro de filiais
-def Cadastro_De_Filiais(lista_filiais, lista_livros):
+# A Filial é cadastrada sem Livros
+def Cadastro_De_Filiais(lista_filiais):
     running = True
 
     print("Cadastro de Filiais\n")
@@ -508,13 +534,13 @@ def Cadastro_De_Filiais(lista_filiais, lista_livros):
             codigo,
             nome,
             endereco,
-            telefone,
-            lista_livros
+            telefone
         ))
 
         running = False
 
 # Função de busca de livros pelo titulo
+#TODO Corrigir
 def Info_Por_Nome(lista_livros):
     
     if (len(lista_livros) > 0):
@@ -571,6 +597,7 @@ def Info_Por_Nome(lista_livros):
         Continuar()
 
 # Função de busca de livros por categoria
+#TODO Corrigir
 def Info_Por_Categoria(lista_livros):
     
     if (len(lista_livros) > 0):
@@ -631,6 +658,7 @@ def Info_Por_Categoria(lista_livros):
         Continuar()
 
 # Função de busca de livros pelo valor
+#TODO Corrigir
 def Info_Por_Valor(lista_livros):
     
     if (len(lista_livros) > 0):
@@ -680,6 +708,7 @@ def Info_Por_Valor(lista_livros):
         Continuar()
 
 # Função de busca de livros pelo estoque
+#TODO Corrigir
 def Info_Por_Estoque(lista_livros):
     
     if (len(lista_livros) > 0):
@@ -732,6 +761,7 @@ def Info_Por_Estoque(lista_livros):
         Continuar()
 
 # Função de calculo para o valor total em estoque (entre todos os livros)
+#TODO Corrigir
 def Valor_Total_Estoque(lista_livros):
     
     if (len(lista_livros) > 0):
@@ -759,61 +789,86 @@ def Valor_Total_Estoque(lista_livros):
         print("Não há nenhum livro salvo na lista local.")
         Continuar()
 
-# Função de busca no arquivo de dados
+# Função para coletar os dados no arquivo de estoque
 def Carregar_Estoque():
     contador_linhas = 0
 
-    print("Carregando livros do arquivo de estoque...\n")
+    print("Carregando dados do arquivo de estoque...\n")
 
     try:
         # Abrindo o arquivo
-        arquivo = open("estoque.txt", "r", encoding="utf-8")
+        arquivo = open("estoque_filiais.txt", "r", encoding="utf-8")
 
         # carregando todas as linhas do arquivo
         for linha in arquivo:
-            contador_linhas += 1
-            linha = linha.replace("\n", "").replace("R$", "").split(",")
+            if linha[0] == "#": # A linha representa uma Filial
+                # Separe a linha em uma lista
+                filial = linha.strip().replace("\n", "").split(",")
+                filial = Filial(
+                        codigo=filial[0],
+                        nome=filial[2],
+                        endereco=filial[1],
+                        telefone=filial[3]
+                    )
             
-            try:
-                novo_valor = float(linha[-2])
-            except ValueError:
-                print(
-                    f"\nOcorreu um erro ao carregar o valor presente na linha: {contador_linhas}"
-                )
-                print("\nCancelando a função....")
-                print("\nVerifique o dado e tente novamente.")
-                Continuar()
-                break
-            except Exception as error:
-                print("\nOcorreu um erro inesperado com o valor, verifique o arquivo e tente novamente")
-                Continuar()
-                break
+            else: # A linha representa um Livro
+                contador_linhas += 1
+                linha = linha.replace("\n", "").replace("R$", "").split(",")
+            
+                try:
+                    novo_valor = float(linha[-2])
+                except ValueError:
+                    print(
+                        f"\nOcorreu um erro ao carregar o valor presente na linha: {contador_linhas}"
+                    )
+                    print("\nCancelando a função....")
+                    print("\nVerifique o dado e tente novamente.")
+                    Continuar()
+                    break
+                except Exception as error:
+                    print("\nOcorreu um erro inesperado com o valor, verifique o arquivo e tente novamente")
+                    Continuar()
+                    break
+
+                try:
+                    novo_estoque = int(linha[-1])
+                except ValueError:
+                    print(
+                        f"\nOcorreu um erro ao carregar a quantidade presente na linha: {contador_linhas}"
+                    )
+                    print("\nCancelando a função....")
+                    print("\nVerifique o dado e tente novamente.")
+                    Continuar()
+                    break
+                except Exception as error:
+                    print("\nOcorreu um erro inesperado com a quantidade, verifique o arquivo e tente novamente")
+                    Continuar()
+                    break
 
             try:
-                novo_estoque = int(linha[-1])
-            except ValueError:
-                print(
-                    f"\nOcorreu um erro ao carregar a quantidade presente na linha: {contador_linhas}"
-                )
-                print("\nCancelando a função....")
-                print("\nVerifique o dado e tente novamente.")
-                Continuar()
-                break
-            except Exception as error:
-                print("\nOcorreu um erro inesperado com a quantidade, verifique o arquivo e tente novamente")
-                Continuar()
-                break
-
-            try:
-                lista_livros.append(Livro(
-                    codigo=linha[0],
-                    titulo=linha[1],
-                    editora=linha[2],
-                    categoria=linha[3],
-                    ano=linha[4],
-                    valor=novo_valor,
-                    estoque=novo_estoque
-                ))
+                if linha[0] == "#": # Se for uma Filial, adicione na lista de Filiais
+                    lista_filiais.append(filial)
+                else:
+                    livro = Livro(
+                        codigo=linha[0],
+                        titulo=linha[1],
+                        editora=linha[2],
+                        categoria=linha[3],
+                        ano=linha[4],
+                        valor=novo_valor,
+                        estoque=novo_estoque
+                    )
+                    filial.Adicionar_Livro(livro)
+                # else: # Se for um Livro, adicione na lista de Livros
+                    # lista_livros.append(Livro(
+                    #     codigo=linha[0],
+                    #     titulo=linha[1],
+                    #     editora=linha[2],
+                    #     categoria=linha[3],
+                    #     ano=linha[4],
+                    #     valor=novo_valor,
+                    #     estoque=novo_estoque
+                    # ))
             except Exception as error:
                 print("\nOcorreu um erro inesperado ao carregar, verifique o arquivo e tente novamente")
                 Continuar()
@@ -827,109 +882,113 @@ def Carregar_Estoque():
         print("O arquivo de estoque não foi encontrado, certifique-se de que ele exista e está localizado junto com o programa.")
         Continuar()
     except IOError:
-        print("O arquivo apresentou algum erro, impedindo a leitura.")
+        print("O arquivo apresentou algum erro que impediu a leitura.")
         Continuar()
     except Exception as error:
         print("Ocorreu um erro inesperado, tente novamente.")
         Continuar()
 
 # Função de atualizaro arquivo de estoque
-def Atualizar_Estoque(lista_livros):
-    if (len(lista_livros) > 0):
+def Atualizar_Estoque(lista_filiais):
+    if (len(lista_filiais) > 0):
         running = True
 
-        while running == True:
-            print("Atualizando o arquivo de estoque...")
-        
-            # Abrindo o arquivo para adicionar conteúdo
-            arquivo = open("estoque.txt", "w", encoding="utf-8")
-            
+        while running:
             try:
-                for livro in lista_livros:
-                    arquivo.write(f"{livro.codigo},{livro.titulo},{livro.ano},{livro.categoria},{livro.editora},R${livro.valor},{livro.estoque}\n")
+                print("Atualizando o arquivo de estoque...")
+            
+                # Abrindo o arquivo para adicionar as Filiais
+                with open("estoque_filiais.txt", "w", encoding="utf-8") as arquivo:
+                    
+                    try:
+                        for filial in lista_filiais:
+                            # escrevendo as Filiais no arquivo
+                            arquivo.write(f"{filial.codigo},{filial.endereco},{filial.nome},{filial.telefone}\n")
+                            
+                            # Adicionando os Livros logo abaixo da Filial
+                            for livro in filial.livros:
+                                arquivo.write(f"{livro.codigo},{livro.titulo},{livro.ano},{livro.categoria},{livro.editora},{livro.valor},{livro.estoque}\n")
 
-                arquivo.close()
-                running = False
+                        running = False
+                    except Exception as error:
+                        print("\nOcorreu um erro na hora de atualizar o arquivo de estoque.")
+                        print(f"Mensagen de erro: {error}\n")
+                        
+                        # Perguntando se o usuário quer repetir a função anterior
+                        repeticao = True
+                        
+                        while repeticao:
+                            print("\nDeseja executar a função novamente? S/N")
+                            try:
+                                escolha = input(": ")
 
+                                if (escolha.upper() == "N"):
+                                    print("Cancelando a execução da funcionalidade...")
+                                    Continuar()
+                                    repeticao = False
+                                    running = False
+
+                                elif (escolha.upper() == "S"):
+                                    print("Executando novamente...")
+                                    Continuar()
+                                    repeticao = False
+
+                                else:
+                                    print("Opção inválida, tente novamente...")
+
+                            except ValueError:
+                                print("\nOcorreu um erro com o valor inserido, selecione uma opção válida.")
+                                Continuar()
+                                continue
+                            except Exception as error:
+                                print("Ocorreu um erro inesperado, tente novamente.")
+                                Continuar()
+                                continue
+
+            except FileNotFoundError:
+                print("O arquivo de estoque não foi encontrado, certifique-se de que ele exista e está localizado junto com o programa.")
+                Continuar()
+                continue
+            except IOError:
+                print("O arquivo apresentou algum erro que impediu a leitura.")
+                Continuar()
+                continue
             except Exception as error:
-                print("\nOcorreu um erro na hora de atualizar o arquivo de estoque.")
-                print(f"Mensagen de erro: {error}\n")
-
-                #? Daqui para baixo está funcionando à base da gambiarra. *não mexer*.
-                flag = Repetir_Função()
-                
-                if (flag == True): #* Parar a função
-                    running = False
-                elif (flag == False): #* Repetir a função
-                    Continuar()
-                    print("-"*30)
+                print("Ocorreu um erro inesperado, tente novamente.")
+                Continuar()
+                continue
 
     else:
         print("Não foi possível atualizar o arquivo.")
-        print("Não há nenhum livro salvo na lista local.")
+        print("Não há nenhuma Filial na lista local.")
         Continuar()
 
-# Função para o usuário escolher se deve repetir a função
-def Repetir_Função():
-    repetir = True
-
-    while repetir:
-        print("\nDeseja executar a função novamente? S/N")
-        
-        try:
-            escolha = input(": ")
-
-            if (escolha.upper() == "N"):
-                print("Cancelando a execução da funcionalidade...")
-                repetir = False
-                # retornando o resultado para parar a execução da função
-                return True
-
-            elif (escolha.upper() == "S"):
-                print("Executando novamente...")
-                repetir = False
-
-                # retornando um sinal para *Não* parar a execução da função
-                return False
-
-            else:
-                print("Opção inválida, tente novamente...")
-        except ValueError:
-            print("\nOcorreu um erro com o valor inserido, selecione uma opção válida.")
-            Continuar()
-            continue
-        except Exception as error:
-            print("Ocorreu um erro inesperado, tente novamente.")
-            Continuar()
-            continue
-
 # Função para listar os Livros que estão cadastrados em uma Filial específica
-def Listar_Estoque_da_Filial():
-    recebendo_valores = True
-    
-    print("Listagem do estoque de uma Filial")
-
-    # Validando o código da Filial
-    while recebendo_valores: # Código da Filial
+def Listar_Estoque_da_Filial(lista_filiais):
+    if len(lista_filiais) > 0:
+        recebendo_valores = True
+        
+        # Normalizando o código da Filial
+        while recebendo_valores: # Código da Filial
             print("\nDigite o código da Filial")
             print("Digite apenas o número do código")
             
-            codigo = input(": ")
+            codigo_inserido = input(": ")
             
             # Verificando se a Filial existe no arquivo
-            codigo_validado = Verificar_Filial(codigo)
+            codigo_validado = Verificar_Filial(codigo_inserido)
             
             if codigo_validado:
-                codigo_atual = codigo
+                codigo_atual = codigo_inserido
                 
                 try:
-                    codigo = str(int(codigo))
-                    codigo = "0" + str(codigo)
+                    codigo_inserido = str(int(codigo_inserido))
+                    codigo_inserido = "0" + str(codigo_inserido)
                     
-                    if codigo_atual[0] == "0" and codigo[0] != "0":
-                        codigo = "0" + str(codigo)
-                        print(codigo)
+                    if codigo_atual[0] == "0" and codigo_inserido[0] != "0":
+                        codigo_inserido = "0" + str(codigo_inserido)
 
+                    codigo_inserido = "#FL" + codigo_inserido
                     recebendo_valores = False
                 except ValueError:
                     print("\nCódigo inválido. Digite apenas números inteiros.")
@@ -945,38 +1004,13 @@ def Listar_Estoque_da_Filial():
                 Continuar()
                 continue
 
-    # Abrindo novamente o arquivo
-    with open("estoque_filiais.txt", "r", encoding="utf-8") as arquivo:
-        livros_na_filial = 0
-        
-        # Buscando a Filial correta
-        for linha in arquivo:
-            if linha[0] == "#":
-                filial = linha.strip().replace("\n", "").split(",")
-                codigo_filial = filial[0].replace("#FL", "")
-                
-                # Verificando se o código é o mesmo que o inserido pelo usuário
-                if codigo_filial == codigo:
-                    break
-        
-        # Buscando os livros da Filial
-        for linha in arquivo:
-            if linha[0] != "#":
-                livros_na_filial += 1
-                linha = linha.strip().replace("R$", "").split(",")
-                livro = Livro(linha[1], linha[0], linha[4], linha[3], linha[2], linha[5], linha[6])
-                livro.Info()
-            else:
-                break
-        
-        if livros_na_filial == 1:
-            print(f"\nFoi encontrado {livros_na_filial} livro na Filial.")
-        elif livros_na_filial > 1:
-            print(f"\nForam encontrados {livros_na_filial} livros na Filial.")
-        else:
-            print("\nNão foram encontrados livros nesta Filial.")
-        
-        Continuar()
+        for filial in lista_filiais:
+            if filial.codigo == codigo_inserido:
+                filial.Info_Livros()
+    else:
+        print("\nNão existe nenhuma Filial na lista local")
+
+    Continuar()
 
 # Função que será executada antes de encerrar o sistema
 def Finalizar_Sessão(lista_livros):
@@ -1013,13 +1047,16 @@ def Finalizar_Sessão(lista_livros):
             continue
 
 # Função para evitar o excesso de informações à vista do usuário,
-# necessitando de um input qualquer para continuar
+# requerindo um input qualquer para continuar
 def Continuar():
     print("-"*30)
     input("Continuar...")
 
-def test():
-    Listar_Estoque_da_Filial()
+def test(lista_filiais):
+    for filial in lista_filiais:
+        filial.Info()
+        
+        print("-"*10)
 
 #* Função Principal
 if __name__ == "__main__":
@@ -1070,10 +1107,10 @@ if __name__ == "__main__":
             Continuar()
             continue
         
-        #******** FUNÇÕES DE TESTES
+        #******** FUNÇÃO DE TESTE
         if escolha == 11: # Teste
             print("-"*30)
-            test()
+            test(lista_filiais)
             Continuar()
 
         if escolha == 0: # Encerrar o sistema
@@ -1119,18 +1156,19 @@ if __name__ == "__main__":
         elif escolha == 8: # Carregar arquivo de livros
             print("-"*30)
             
-            # Apagando os valores da lista local
+            # Apagando os valores das listas locais
             lista_livros = []
+            lista_filiais = []
 
             Carregar_Estoque()
         
         elif escolha == 9: # Atualizar o arquivo de estoque
             print("-"*30)
-            Atualizar_Estoque(lista_livros)
+            Atualizar_Estoque(lista_filiais)
 
         elif escolha == 10: # Listagem do estoque de uma Filial específica
             print("-"*30)
-            Listar_Estoque_da_Filial()
+            Listar_Estoque_da_Filial(lista_filiais)
 
         else: # Opção inválida
             print("-"*30)
