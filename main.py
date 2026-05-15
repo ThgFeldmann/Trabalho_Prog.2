@@ -47,7 +47,6 @@ class Livro:
         print(f"Valor total em estoque: R$ {valor_estoque:.2f}")
 
 #* Classe para Filiais
-# Protótipo
 class Filial(Livro):
     def __init__(self, codigo, nome, endereco, telefone):
         self.codigo = codigo
@@ -151,38 +150,50 @@ def Entrada_do_Codigo_Filial():
         print("\nDigite o código da Filial")
         print("Digite apenas o número do código")
         
-        codigo_inserido = input(": ")
-        
-        # Verificando se a Filial existe no arquivo
-        codigo_validado = Verificar_Filial(codigo_inserido)
-        
-        if codigo_validado:
-            codigo_atual = codigo_inserido
+        try:
+            codigo_inserido = input(": ")
             
-            try:
-                codigo_inserido = str(int(codigo_inserido))
-                codigo_inserido = "0" + str(codigo_inserido)
+            if codigo_inserido != "":
+                # Verificando se a Filial existe no arquivo
+                codigo_validado = Verificar_Filial(codigo_inserido)
                 
-                if codigo_atual[0] == "0" and codigo_inserido[0] != "0":
-                    codigo_inserido = "0" + str(codigo_inserido)
+                if codigo_validado:
+                    codigo_atual = codigo_inserido
+                    
+                    try:
+                        codigo_inserido = str(int(codigo_inserido))
+                        codigo_inserido = "0" + str(codigo_inserido)
+                        
+                        if codigo_atual[0] == "0" and codigo_inserido[0] != "0":
+                            codigo_inserido = "0" + str(codigo_inserido)
 
-                codigo_inserido = "#FL" + codigo_inserido
-                recebendo_valores = False
-                
-                #* Retornando o código da Filial, validado e normalizado
-                return codigo_inserido
-            
-            except ValueError:
-                print("\nCódigo inválido. Digite apenas números inteiros.")
-                Continuar()
-                continue
-            except Exception as error:
-                print("\nOcorreu um erro inesperado, tente novamente.")
-                print(f"Erro: {error}")
-                Continuar()
-                continue
-        else:
-            print("\nNão foi encontrado nenhuma Filial com este código.")
+                        codigo_inserido = "#FL" + codigo_inserido
+                        recebendo_valores = False
+                        
+                        #* Retornando o código da Filial, validado e normalizado
+                        return codigo_inserido
+                    
+                    except ValueError:
+                        print("\nCódigo inválido. Digite apenas números inteiros.")
+                        Continuar()
+                        continue
+                    except Exception as error:
+                        print("\nOcorreu um erro inesperado, tente novamente.")
+                        print(f"Erro: {error}")
+                        Continuar()
+                        continue
+                else:
+                    print("\nNão foi encontrado nenhuma Filial com este código.")
+                    Continuar()
+                    continue
+            else:
+                raise ValueError
+        except ValueError:
+            print("\nCódigo inválido. Insira algum valor e tente novamente")
+            Continuar()
+            continue
+        except Exception as error:
+            print("\nOcorreu um erro inesperado, tente novamente.")
             Continuar()
             continue
 
@@ -606,44 +617,92 @@ def Confirmação_De_Cadastro_Do_Livro(livro, codigo_filial, lista_filiais):
 def Cadastro_De_Filiais(lista_filiais):
     running = True
 
-    print("Cadastro de Filiais\n")
-
-    # Flag para repetição de inputs individuais
-    recebendo_valores = True
-
     while running:
-    
+        print("Cadastro de Filiais\n")
+        
         codigo = Entrada_do_Codigo_Filial()
 
+        # Flag para repetição de inputs individuais
         recebendo_valores = True
 
         while recebendo_valores: # Nome
-            nome = input("Digite o nome da filial: ")
-            recebendo_valores = False
+            try:
+                nome = input("Digite o nome da filial: ")
+                
+                if nome != "":
+                    recebendo_valores = False
+                else:
+                    print("\nInsira algum valor válido no campo.")
+                    Continuar()
+                    continue
+                
+            except ValueError:
+                print("\nNome inválido, digite apenas caracteres alfabéticos.")
+                Continuar()
+                continue
+            except Exception as error:
+                print("\nOcorreu um erro inesperado, tente novamente.")
+                Continuar()
+                continue
 
         recebendo_valores = True
 
         while recebendo_valores: # Endereço
-            endereco = input("Digite o endereço da filial: ")
-            recebendo_valores = False
+            try:
+                endereco = input("Digite o endereço da filial: ")
+                
+                if endereco != "":
+                    recebendo_valores = False
+                else:
+                    print("\nInsira algum valor válido no campo.")
+                    Continuar()
+                    continue
+                
+            except ValueError:
+                print("\nEndereço inválido, digite apenas caracteres alfabéticos.")
+                Continuar()
+                continue
+            except Exception as error:
+                print("\nOcorreu um erro inesperado, tente novamente.")
+                Continuar()
+                continue
         
         recebendo_valores = True
 
         while recebendo_valores: # Telefone
-            telefone = input("Digite o telefone da filial: ")
-            recebendo_valores = False
-        
-        lista_filiais.append(Filial(
-            codigo,
-            nome,
-            endereco,
-            telefone
-        ))
+            try:
+                telefone = input("Digite o telefone da filial: ")
+                
+                if telefone != "":
+                    recebendo_valores = False
+                else:
+                    print("\nInsira algum valor válido no campo.")
+                    Continuar()
+                    continue
 
-        running = False
+            except ValueError:
+                print("\nTelefone inválido, digite no formato: xxxx-xxxx.")
+                Continuar()
+                continue
+            except Exception as error:
+                print("\nOcorreu um erro inesperado, tente novamente.")
+                Continuar()
+                continue
+        
+        try:
+            lista_filiais.append(Filial(
+                codigo,
+                nome,
+                endereco,
+                telefone
+            ))
+
+            running = False
+        except Exception as error:
+            print("\nOcorreu um erro inesperado ao realizar o cadastro. Tente novamente.")
+            Continuar()
 
 #Função de busca de Livros por código, mostrando valores diferentes entre as Filiais
-#TODO Em desenvolvimento
 def Info_Por_Codigo(lista_filiais):
     if len(lista_filiais) > 0:
         recebendo_valores = True
@@ -675,8 +734,6 @@ def Info_Por_Codigo(lista_filiais):
                 lista_livros = []
                 
                 lista_enderecos_filiais = []
-                # Contador para selecionar o endereço correto na lista
-                contador_enderecos = 0
 
                 # diferenca = [valor, endereço_filial, estoque]
                 lista_diferencas = []
@@ -688,13 +745,22 @@ def Info_Por_Codigo(lista_filiais):
                     lista_livros.append(filial.Retornar_Livro_por_Codigo(codigo_inserido))
                     
                     encontrados += 1
-                
+
+                # Contador para selecionar o endereço correto na lista
+                contador_enderecos = 0
+
+                # Procurando as diferenças entre as Filiais e os endereços
                 for livro in lista_livros:
                     endereco_filial = lista_enderecos_filiais[contador_enderecos]
                     lista_diferencas.append([livro.valor, endereco_filial, livro.estoque])
                     contador_enderecos += 1
 
-                livro.Info_Diferencas(lista_diferencas)
+                try:
+                    livro.Info_Diferencas(lista_diferencas)
+                except Exception as error:
+                    print("\nOcorreu um erro inesperado durante a busca. Tente novamente mais tarde.")
+                    Continuar()
+                    continue
                 
                 if encontrados > 0:
                     print(f"\n{encontrados} livro(s) foram encontrados.")
@@ -705,7 +771,7 @@ def Info_Por_Codigo(lista_filiais):
                 Continuar()
 
             except Exception as error:
-                print("Ocorreu um erro inesperado, tente novamente.")
+                print("Ocorreu um erro inesperado durante a busca. Tente novamente mais tarde.")
                 Continuar()
                 continue
 
@@ -1046,7 +1112,6 @@ def Atualizar_Estoque(lista_filiais):
             
                 # Abrindo o arquivo para adicionar as Filiais
                 with open("estoque_filiais.txt", "w", encoding="utf-8") as arquivo:
-                    
                     try:
                         for filial in lista_filiais:
                             # escrevendo as Filiais no arquivo
@@ -1113,17 +1178,34 @@ def Atualizar_Estoque(lista_filiais):
 # Função para listar os Livros que estão cadastrados em uma Filial específica
 # Retorna Também o valor total em estoque
 def Listar_Estoque_da_Filial(lista_filiais):
-    if len(lista_filiais) > 0:
-        codigo_inserido = Entrada_do_Codigo_Filial()
+    running = True
+    
+    while running:
+        if len(lista_filiais) > 0:
+            codigo_inserido = Entrada_do_Codigo_Filial()
 
-        for filial in lista_filiais:
-            if filial.codigo == codigo_inserido:
-                filial.Info_Livros()
-                break
-        
-        filial.Calcular_Valor_Total_de_Livros()
-    else:
-        print("\nNão existe nenhuma Filial na lista local")
+            if codigo_inserido != "":
+                try:
+                    for filial in lista_filiais:
+                        if filial.codigo == codigo_inserido:
+                            filial.Info_Livros()
+                            break
+                    
+                    filial.Calcular_Valor_Total_de_Livros()
+                    
+                    running = False
+                except Exception as error:
+                    print("\nOcorreu ao listar os livros da Filial. Tente novamente.")
+                    print(f"Mensagem do erro: {error}")
+                    Continuar()
+                    continue
+            else:
+                print("\nDigite um código para a busca.")
+                Continuar()
+                continue
+
+        else:
+            print("\nNão existe nenhuma Filial na lista local")
 
     Continuar()
 
@@ -1181,6 +1263,8 @@ if __name__ == "__main__":
     
     # Condição para executar o sistema
     while escolha != 0:
+        
+        # Menu
         print("-"*30)
         print("Funcionalidades Disponíveis: \n")
         print("1 - Cadastrar Livro ou Filial")
@@ -1190,7 +1274,6 @@ if __name__ == "__main__":
         print("5 - Carregar estoque")
         print("6 - Atualizar arquivo no estoque")
         print("7 - Listagem de estoque")
-
         print("0 - Encerrar atividades\n")
         
         # Entrada da escolha do usuário
