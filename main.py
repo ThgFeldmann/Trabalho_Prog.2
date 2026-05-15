@@ -1,6 +1,3 @@
-#TODO Funcionalidade de busca de Livro por código, incluindo os valores diferentes entre as filiais
-# ({valor} >>> {nome da Filial}, {estoque deste livro na Filial})
-
 from datetime import datetime
 
 #* Classe para Livros
@@ -29,6 +26,25 @@ class Livro:
         print(f"Valor: R$ {self.valor}")
         print(f"Estoque: {self.estoque:.2f} unidade(s)")
         print(f"Valor total em estoque: R$ {valor_estoque:.2f}")
+    
+    def Info_Diferencas(self, lista_diferencas):
+        valor_estoque = 0
+        
+        for diferenca in lista_diferencas:
+            valor = diferenca[0]
+            estoque = diferenca [2]
+            
+            valor_estoque += valor * estoque
+        
+        print(f"\n>>>>>>Cod#{self.codigo}")
+        print(f"Titulo/Editora: {self.titulo}/{self.editora}")
+        print(f"Categoria: {self.categoria}")
+        print(f"Ano: {self.ano}")
+        
+        for diferenca in lista_diferencas:
+            print(f"Valor: R$ {diferenca[0]:.2f} >>> Filial {diferenca[1]}: estoque: {diferenca[2]} unidades")
+
+        print(f"Valor total em estoque: R$ {valor_estoque:.2f}")
 
 #* Classe para Filiais
 # Protótipo
@@ -52,6 +68,11 @@ class Filial(Livro):
         for livro in self.livros:
             livro.Info()
     
+    def Retornar_Livro_por_Codigo(self, codigo_inserido):
+        for livro in self.livros:
+            if livro.codigo == codigo_inserido:
+                return livro
+    
     def Info_Livro_por_Nome(self, titulo_inserido):
         for livro in self.livros:
             if livro.titulo.upper() == titulo_inserido:
@@ -64,12 +85,12 @@ class Filial(Livro):
     
     def Info_Livro_por_Valor(self, valor_inserido):
         for livro in self.livros:
-            if livro.valor.upper() == valor_inserido:
+            if livro.valor == valor_inserido:
                 livro.Info()
     
     def Info_Livro_por_Estoque(self, estoque_inserido):
         for livro in self.livros:
-            if livro.estoque.upper() == estoque_inserido:
+            if livro.estoque == estoque_inserido:
                 livro.Info()
     
     def Adicionar_Livro(self, livro):
@@ -207,10 +228,11 @@ def Escolher_Busca(lista_filiais):
 
     while running:
         print("Como deseja procurar o livro?\n")
-        print("1 - Buscar livros por nome")
-        print("2 - Buscar livros por categoria")
-        print("3 - Buscar livros por preço")
-        print("4 - Busca por quantidade em estoque")
+        print("1 - Buscar livros por código")
+        print("2 - Buscar livros por nome")
+        print("3 - Buscar livros por categoria")
+        print("4 - Buscar livros por preço")
+        print("5 - Busca por quantidade em estoque")
         print("0 - Sair")
 
         try:
@@ -233,16 +255,20 @@ def Escolher_Busca(lista_filiais):
         elif (escolha == 1):
             print("-"*30)
             running = False
-            Info_Por_Nome(lista_filiais)
+            Info_Por_Codigo(lista_filiais)
         elif (escolha == 2):
             print("-"*30)
             running = False
-            Info_Por_Categoria(lista_filiais)
+            Info_Por_Nome(lista_filiais)
         elif (escolha == 3):
             print("-"*30)
             running = False
-            Info_Por_Valor(lista_filiais)
+            Info_Por_Categoria(lista_filiais)
         elif (escolha == 4):
+            print("-"*30)
+            running = False
+            Info_Por_Valor(lista_filiais)
+        elif (escolha == 5):
             print("-"*30)
             running = False
             Info_Por_Estoque(lista_filiais)
@@ -615,6 +641,77 @@ def Cadastro_De_Filiais(lista_filiais):
         ))
 
         running = False
+
+#Função de busca de Livros por código, mostrando valores diferentes entre as Filiais
+#TODO Em desenvolvimento
+def Info_Por_Codigo(lista_filiais):
+    if len(lista_filiais) > 0:
+        recebendo_valores = True
+        encontrados = 0
+
+        while recebendo_valores:
+            print("\nBusca pelo código do livro\n")
+            
+            try:
+                codigo_inserido = input("Digite o código do livro desejado: ").upper()
+                
+                if (len(codigo_inserido) <= 0):
+                    raise ValueError
+            
+            except ValueError:
+                print("\nOcorreu um erro na entrada, utilize apenas números inteiros e tente novamente.")
+                Continuar()
+                continue
+            except Exception as error:
+                print("Ocorreu um erro inesperado, tente novamente.")
+                print(f"Mensagem de erro: {error}")
+                Continuar()
+                continue
+            
+            print("Buscando livros...")
+            
+            try:
+                # Lista de Livros repetidos, com alguns valores diferentes
+                lista_livros = []
+                
+                lista_enderecos_filiais = []
+                # Contador para selecionar o endereço correto na lista
+                contador_enderecos = 0
+
+                # diferenca = [valor, endereço_filial, estoque]
+                lista_diferencas = []
+
+                for filial in lista_filiais:
+                    lista_enderecos_filiais.append(filial.endereco)
+                    
+                    # Adicionando todos os livros que possuem o 'codigo_inserido' na lista de Livros
+                    lista_livros.append(filial.Retornar_Livro_por_Codigo(codigo_inserido))
+                    
+                    encontrados += 1
+                
+                for livro in lista_livros:
+                    endereco_filial = lista_enderecos_filiais[contador_enderecos]
+                    lista_diferencas.append([livro.valor, endereco_filial, livro.estoque])
+                    contador_enderecos += 1
+
+                livro.Info_Diferencas(lista_diferencas)
+                
+                if encontrados > 0:
+                    print(f"\n{encontrados} livro(s) foram encontrados.")
+                else:
+                    print("\nNenhum livro com este titulo foi encontrado.")
+                
+                recebendo_valores = False
+                Continuar()
+
+            except Exception as error:
+                print("Ocorreu um erro inesperado, tente novamente.")
+                Continuar()
+                continue
+
+    else:
+        print("\nNão existe nenhuma Filial na lista local")
+        Continuar()
 
 # Função de busca de livros pelo titulo
 def Info_Por_Nome(lista_filiais):
