@@ -1,0 +1,5 @@
+0301,Compiladores,Pearson,Computação,2016,R$85.00,125
+1203,Engenharia de Software,Pressman,Computação,2011,R$78.00,100
+3426,compiladores,2012,computação,pearson,R$135.50,50
+2631,sistemas digitais,2017,computação,liber,R$99.90,30
+9680,senhor dos aneis: a sociedade do anel,2005,fantasia,harper,R$35.00,120
