@@ -170,7 +170,7 @@ def Escolher_Cadastro(lista_filiais):
     running = True
 
     while running:
-        print("O que deseja cadastrar: ")
+        print("O que deseja cadastrar:\n")
         print("1 - Livro")
         print("2 - Filial")
         print("0 - Sair")
@@ -200,6 +200,52 @@ def Escolher_Cadastro(lista_filiais):
             print("-"*30)
             running = False
             Cadastro_De_Filiais(lista_filiais)
+
+# Função para a escolha da busca
+def Escolher_Busca(lista_filiais):
+    running = True
+
+    while running:
+        print("Como deseja procurar o livro?\n")
+        print("1 - Buscar livros por nome")
+        print("2 - Buscar livros por categoria")
+        print("3 - Buscar livros por preço")
+        print("4 - Busca por quantidade em estoque")
+        print("0 - Sair")
+
+        try:
+            escolha = int(input(": "))
+        except ValueError:
+            print("-"*30)
+            print("Entrada inválida. Utilize números inteiros.")
+            Continuar()
+            continue
+        except Exception as error: #* Em caso de erros inesperados
+            print("-"*30)
+            print("Ocorreu um erro inesperado, certifique-se de usar números inteiros e tente novamente")
+            Continuar()
+            continue
+        
+        if (escolha == 0):
+            print("\nVoltando para o menu...")
+            running = False
+            Continuar()
+        elif (escolha == 1):
+            print("-"*30)
+            running = False
+            Info_Por_Nome(lista_filiais)
+        elif (escolha == 2):
+            print("-"*30)
+            running = False
+            Info_Por_Categoria(lista_filiais)
+        elif (escolha == 3):
+            print("-"*30)
+            running = False
+            Info_Por_Valor(lista_filiais)
+        elif (escolha == 4):
+            print("-"*30)
+            running = False
+            Info_Por_Estoque(lista_filiais)
 
 # Função para enviar o Livro para o estoque e adiciona-lo na Filial correta
 def Enviar_Livro_Para_a_Filial_No_Estoque(codigo_filial_inserido, livro):
@@ -1024,12 +1070,6 @@ def Continuar():
     print("-"*30)
     input("Continuar...")
 
-def test(lista_filiais):
-    for filial in lista_filiais:
-        filial.Info()
-        
-        print("-"*10)
-
 #* Função Principal
 if __name__ == "__main__":
     # lista de filiais
@@ -1048,20 +1088,15 @@ if __name__ == "__main__":
         print("Funcionalidades Disponíveis: \n")
         print("1 - Cadastrar Livro ou Filial")
         print("2 - Listar livros")
-        print("3 - Buscar livros por nome")
-        print("4 - Buscar livros por categoria")
-        print("5 - Buscar livros por preço")
-        print("6 - Busca por quantidade em estoque")
-        print("7 - Valor total no estoque")
-        print("8 - Carregar estoque")
-        print("9 - Atualizar arquivo no estoque")
-        print("10 - Listagem de estoque")
-
-        #******** FUNÇÃO DE TESTE
-        print("11 - Teste")
+        print("3 - Buscar Livros")
+        print("4 - Valor total no estoque")
+        print("5 - Carregar estoque")
+        print("6 - Atualizar arquivo no estoque")
+        print("7 - Listagem de estoque")
 
         print("0 - Encerrar atividades\n")
         
+        # Entrada da escolha do usuário
         try:
             escolha = int(input(
                 "Digite o número da funcionalidade desejada: "))
@@ -1075,12 +1110,6 @@ if __name__ == "__main__":
             print("Ocorreu um erro inesperado, certifique-se de usar números inteiros e tente novamente")
             Continuar()
             continue
-        
-        #******** FUNÇÃO DE TESTE
-        if escolha == 11: # Teste
-            print("-"*30)
-            test(lista_filiais)
-            Continuar()
 
         if escolha == 0: # Encerrar o sistema
             print("-"*30)
@@ -1104,27 +1133,15 @@ if __name__ == "__main__":
 
             Continuar()
 
-        elif escolha == 3: # Buscar livro por nome
+        elif escolha == 3: # Buscar livros
             print("-"*30)
-            Info_Por_Nome(lista_filiais)
+            Escolher_Busca(lista_filiais)
 
-        elif escolha == 4: # Buscar livro por categoria
-            print("-"*30)
-            Info_Por_Categoria(lista_filiais)
-
-        elif escolha == 5: # Buscar livro por preço
-            print("-"*30)
-            Info_Por_Valor(lista_filiais)
-
-        elif escolha == 6: # Buscar livro por estoque
-            print("-"*30)
-            Info_Por_Estoque(lista_filiais)
-
-        elif escolha == 7: # Valor total no estoque
+        elif escolha == 4: # Valor total no estoque
             print("-"*30)
             Valor_Total_Estoque(lista_filiais)
 
-        elif escolha == 8: # Carregar arquivo de livros
+        elif escolha == 5: # Carregar arquivo de livros
             print("-"*30)
             
             # Apagando os valores das listas locais
@@ -1132,11 +1149,11 @@ if __name__ == "__main__":
 
             Carregar_Estoque()
         
-        elif escolha == 9: # Atualizar o arquivo de estoque
+        elif escolha == 6: # Atualizar o arquivo de estoque
             print("-"*30)
             Atualizar_Estoque(lista_filiais)
 
-        elif escolha == 10: # Listagem do estoque de uma Filial específica
+        elif escolha == 7: # Listagem do estoque de uma Filial específica
             print("-"*30)
             Listar_Estoque_da_Filial(lista_filiais)
 
