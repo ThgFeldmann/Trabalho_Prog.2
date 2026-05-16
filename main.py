@@ -904,7 +904,7 @@ def Info_Por_Valor(lista_filiais):
                     raise ValueError
             
             except ValueError:
-                print("\nOcorreu um erro na entrada, utilize apenas caracteres alfabéticos e tente novamente.")
+                print("\nOcorreu um erro na entrada, utilize apenas números e tente novamente.")
                 Continuar()
                 continue
             except Exception as error:
@@ -951,13 +951,13 @@ def Info_Por_Estoque(lista_filiais):
             print("\nBusca pela quantidade mínima do livro\n")
             
             try:
-                estoque_inserido = float(input("Digite a quantidade mínima desejada para a busca: "))
+                estoque_inserido = int(input("Digite a quantidade mínima desejada para a busca: "))
                 
-                if (len(estoque_inserido) <= 0):
+                if (estoque_inserido <= 0):
                     raise ValueError
             
             except ValueError:
-                print("\nOcorreu um erro na entrada, utilize apenas caracteres alfabéticos e tente novamente.")
+                print("\nOcorreu um erro na entrada, utilize apenas números inteiros e tente novamente.")
                 Continuar()
                 continue
             except Exception as error:
@@ -966,7 +966,7 @@ def Info_Por_Estoque(lista_filiais):
                 Continuar()
                 continue
             
-            print(f"Buscando livros com quantidade maior que: {estoque_alvo}...")
+            print(f"Buscando livros com quantidade maior que: {estoque_inserido}...")
             
             try:
                 for filial in lista_filiais:
